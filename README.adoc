@@ -1,0 +1,33 @@
+= Types Presentation
+
+== Types of Typing
+* Strong/Weak
+* Static/Dynamic
+
+=== Weak Dynamic
+
+=== Strong Dynamic
+
+=== Strong Static
+
+=== Weak Static
+aka Stringly-Typed
+Map<Object, Object>
+
+== Tiny Types
+(code usage and impl)
+
+== Enumerations
+
+== Future
+A result that _may_ be available later
+... or may be an exception
+
+== Option(al)
+A result that may not be there
+
+== Either/Maybe
+May be successful
+... or maybe not
+
+== 
