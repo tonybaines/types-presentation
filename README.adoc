@@ -11,23 +11,33 @@
 === Strong Static
 
 === Weak Static
-aka Stringly-Typed
-Map<Object, Object>
+* aka Stringly-Typed
+* Map<Object, Object>
 
 == Tiny Types
-(code usage and impl)
+* (code usage and impl)
+* Why they're useful
+** Compile-time safety
+** Good OO
+** IDE auto-completion
+** Refactoring
 
 == Enumerations
 
-== Future
-A result that _may_ be available later
-... or may be an exception
+== Nullable?
 
-== Option(al)
-A result that may not be there
+== Types-in-a-box
+=== Promise/Future
+* A result that _may_ be available later
+* ... or may be an exception
 
-== Either/Maybe
-May be successful
-... or maybe not
+=== Option(al)
+* A result that may not be there
 
-== 
+=== Either/Maybe
+* May be successful
+* ... or maybe not
+
+=== Functional processing
+* Specific types are useful
+* 'Type-in-a-box' types - deferred error handling / synchronisation
