@@ -1,8 +1,23 @@
-= Types Presentation
+= Types
+2019-04-04
+:revnumber: {project-version}
+ifndef::imagesdir[:imagesdir: images]
+ifndef::sourcedir[:sourcedir: src]
+:source-highlighter: highlightjs
+:icons: font
+:revealjs_theme: sky
+:revealjs_slideNumber: h.v
 
 == Types of Typing
 * Strong/Weak
 * Static/Dynamic
+
+[source, python]
+----
+print "Hello World"
+----
+
+IMPORTANT: Know where your towel is
 
 === Weak Dynamic
 

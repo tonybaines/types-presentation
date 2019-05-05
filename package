@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+archive="$(basename "$PWD").zip"
+if (( -f $archive)) ; then rm -f $archive; fi
+zip -r $archive index.html reveal.js/
+
