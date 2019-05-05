@@ -9,37 +9,141 @@ ifndef::sourcedir[:sourcedir: src]
 :revealjs_slideNumber: h.v
 
 == Types of Typing
-* Strong/Weak
+* Checked/Unchecked/Weak/Strong
 * Static/Dynamic
 
-[source, python]
+
+=== Dynamic
+[source,ruby]
 ----
-print "Hello World"
+def greet(name)
+  return "Hello " + name
+end
+
+hello("Tony") # Hello Tony
+hello(3)      # TypeError (runtime)
+----
+* Ruby determines the type of a reference at runtime
+* Test coverage is important to stop this happening
+
+=== Static
+[source,java]
+----
+String greet(String name) {
+    return "Hello " + name;
+}
+
+hello("Tony");
+
+hello(3); // Compliation fails
+----
+* Java *must* know the type of a reference at compile time
+* Test coverage is more about behaviours
+
+=== Except ...
+
+
+
+=== `Object`
+
+[source,java]
+----
+String greet(Object name) {
+    return "Hello " + name;
+}
+
+hello("Tony");
+
+hello(3);
 ----
 
-IMPORTANT: Know where your towel is
+* Successful, but not checked until runtime
 
-=== Weak Dynamic
+=== What about ...?
 
-=== Strong Dynamic
+[source,java]
+----
+String greet(Object name, Object repeat) {
+    return "Hello ".repeat((int)repeat) + name;
+}
 
-=== Strong Static
+greet("Tony", 3);
+greet(3, "Tony");
+----
+[.step]
+* Both compile
+* Runtime exception
+* But who'd do that?
 
-=== Weak Static
-* aka Stringly-Typed
-* Map<Object, Object>
+=== `Map`
+
+[source,java]
+----
+String greetMany(Map<String, Integer> people) {
+    StringBuilder greetings = new StringBuilder();
+    people.forEach( (name, repeat) -> {
+        greetings.append("Hello ".repeat(repeat) + name);
+    });
+    return greetings.toString();
+}
+
+Map people = new HashMap() {{
+    put("Tony", 3);
+    put(3, "Tony");
+}};
+greetMany(people);
+----
+[.step]
+* Runtime exception
+* But who'd do that?
+
+=== `String`
+
+[source,java]
+----
+String greet(String name, String place) {
+    return "Hello " + name + " from " + place;
+}
+
+greet("Alice", "London");
+greet("Leeds", "Bob");
+
+----
+[.step]
+* Runtime confusion
+
 
 == Tiny Types
-* (code usage and impl)
-* Why they're useful
-** Compile-time safety
-** Good OO
-** IDE auto-completion
-** Refactoring
+
+=== Is this better?
+[source,java]
+----
+String greet(Name person, City city) {
+    return "Hello " + person.givenName + " " + city;
+}
+
+Name theresa = Name.of("Theresa");
+City london = Name.of("London");
+greet(theresa, london);
+
+LatLon position = locationOf(london);
+----
+
+=== Why they're useful
+* Compile-time safety
+* Good OO
+* IDE auto-completion
+* Refactoring
 
 == Enumerations
+* A fixed set of options
+* Can also implement an `interface`
 
 == Nullable?
+* A `String` which can hold a null reference
+* A `String` which can only have a value
+** Are they the same type?
+* Kotlin / C#
 
 == Types-in-a-box
 === Promise/Future
@@ -53,6 +157,34 @@ IMPORTANT: Know where your towel is
 * May be successful
 * ... or maybe not
 
-=== Functional processing
-* Specific types are useful
-* 'Type-in-a-box' types - deferred error handling / synchronisation
+=== Why are they useful?
+* Deferred error handling / synchronisation
+
+[source,java]
+----
+void sayTheTime(Future<Instant> time) {
+    try {
+        // Success and a result
+        System.out.println(DateTimeFormatter.ISO_DATE.format(time.get()));
+    } catch (Exception e) {
+        e.printStackTrace(); // Failure
+    }
+}
+
+CompletableFuture<Instant> someTimeLater(String name) {
+    return CompletableFuture.supplyAsync(() -> {
+        try {
+            Thread.sleep(new Random().nextLong());
+            System.out.println(name + " is done");
+            return Clock.systemUTC().instant();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    });
+}
+
+CompletableFuture<Instant> foo = someTimeLater("foo");
+CompletableFuture<Instant> bar = someTimeLater("bar");
+CompletableFuture winner = CompletableFuture.anyOf(foo, bar);
+sayTheTime(winner);
+----
