@@ -146,12 +146,32 @@ LatLon position = locationOf(london);
 * Kotlin / C#
 
 == Types-in-a-box
+* These types express uncertainty
+* Can defer resolving the uncertainty
+* Something like schrödinger's cat
+
 === Promise/Future
 * A result that _may_ be available later
 * ... or may be an exception
 
-=== Option(al)
+=== Optional
 * A result that may not be there
+[source,java]
+----
+Optional<TimeSlot> nextFreeMeetingSlot(Criteria criteria) {...}
+Optional<MeetingRequest> bookMeeting(Instant startTime, Duration duration) {...}
+
+
+MeetingRequest meetingRequest =
+    nextFreeMeetingSlot(criteria)
+        .filter(timeSlot -> myDiary.isFree(timeSlot))
+        .map(timeSlot -> timeSlot.startTime)
+        .flatMap(startTime -> bookMeeting(startTime, minutes(15)))
+        .orElseThrow(new IllegalStateException("No meeting slot available"));
+----
+* Express the 'happy path'
+* Handle errors from any step
+** Each of the first three steps might result in a 'not-present'
 
 === Either/Maybe
 * May be successful
@@ -188,3 +208,21 @@ CompletableFuture<Instant> bar = someTimeLater("bar");
 CompletableFuture winner = CompletableFuture.anyOf(foo, bar);
 sayTheTime(winner);
 ----
+
+== More complex types
+
+[source,haskell]
+----
+data BillingInfo = CreditCard CardNumber CardHolder Address
+                 | CashOnDelivery
+                 | Invoice CustomerID
+----
+
+* This Haskell code expresses the concept that billing information can be
+** A credit card, defined by some properties
+** cash on delivery
+** an invoice, for a specific customer-ID
+
+== Types express meaning
+* The programming language enables and constrains
+* How we use the language makes a difference
