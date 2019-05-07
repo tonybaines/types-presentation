@@ -156,19 +156,27 @@ LatLon position = locationOf(london);
 
 === Optional
 * A result that may not be there
+
 [source,java]
 ----
 Optional<TimeSlot> nextFreeMeetingSlot(Criteria criteria) {...}
-Optional<MeetingRequest> bookMeeting(Instant startTime, Duration duration) {...}
+Optional<MeetingRequest> bookMeeting(Instant startTime,
+                                        Duration duration) {...}
 
-
-MeetingRequest meetingRequest =
+Meeting meeting =
     nextFreeMeetingSlot(criteria)
-        .filter(timeSlot -> myDiary.isFree(timeSlot))
-        .map(timeSlot -> timeSlot.startTime)
-        .flatMap(startTime -> bookMeeting(startTime, minutes(15)))
-        .orElseThrow(new IllegalStateException("No meeting slot available"));
+        .filter(timeSlot ->
+            myDiary.isFree(timeSlot))
+        .map(timeSlot ->
+            timeSlot.startTime)
+        .flatMap(startTime ->
+            bookMeeting(startTime, minutes(15)))
+        .orElseThrow(
+            new MeetingException("No meeting slot available")
+        );
 ----
+
+=== Optional
 * Express the 'happy path'
 * Handle errors from any step
 ** Each of the first three steps might result in a 'not-present'
@@ -185,7 +193,7 @@ MeetingRequest meetingRequest =
 void sayTheTime(Future<Instant> time) {
     try {
         // Success and a result
-        System.out.println(DateTimeFormatter.ISO_DATE.format(time.get()));
+        println(DateTimeFormatter.ISO_DATE.format(time.get()));
     } catch (Exception e) {
         e.printStackTrace(); // Failure
     }
@@ -218,7 +226,8 @@ data BillingInfo = CreditCard CardNumber CardHolder Address
                  | Invoice CustomerID
 ----
 
-* This Haskell code expresses the concept that billing information can be
+* This Haskell code expresses the concept that billing
+information can be
 ** A credit card, defined by some properties
 ** cash on delivery
 ** an invoice, for a specific customer-ID
