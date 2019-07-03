@@ -24,7 +24,8 @@ hello("Tony") # Hello Tony
 hello(3)      # TypeError (runtime)
 ----
 * Ruby determines the type of a reference at runtime
-* Test coverage is important to stop this happening
+** The 'shape' of the object is _assumed_
+* Test coverage is important to check assumptions
 
 === Static
 [source,java]
@@ -38,7 +39,8 @@ hello("Tony");
 hello(3); // Compliation fails
 ----
 * Java *must* know the type of a reference at compile time
-* Test coverage is more about behaviours
+** The 'shape' of the object is _known_
+* Test coverage focuses on behaviours
 
 === Except ...
 
