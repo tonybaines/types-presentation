@@ -1,5 +1,5 @@
-= Types
-2019-04-04
+= How strong are your types?
+2019-07-31
 :revnumber: {project-version}
 ifndef::imagesdir[:imagesdir: images]
 ifndef::sourcedir[:sourcedir: src]
@@ -8,10 +8,19 @@ ifndef::sourcedir[:sourcedir: src]
 :revealjs_theme: sky
 :revealjs_slideNumber: h.v
 
+
+== Outline
+* An overview of typing
+* The art of typing without typing
+* Making types work harder
+
 == Types of Typing
 * Checked/Unchecked/Weak/Strong
 * Static/Dynamic
-
+* Trade-offs
+** Compilation cost
+** Feedback time for mistakes
+** Clarity/Verbosity
 
 === Dynamic
 [source,ruby]
@@ -36,7 +45,7 @@ String greet(String name) {
 
 hello("Tony");
 
-hello(3); // Compliation fails
+hello(3); // Compilation fails
 ----
 * Java *must* know the type of a reference at compile time
 ** The 'shape' of the object is _known_
