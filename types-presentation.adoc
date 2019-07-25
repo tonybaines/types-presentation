@@ -14,6 +14,30 @@ ifndef::sourcedir[:sourcedir: src]
 * The art of typing without typing
 * Making types work harder
 
+[.notes]
+--
+* This is a discussion about types as they're used in day-to-day development - there will be code
+* I'll do my best to define terms as I go, but ask if I miss something or if I've explained it badly
+* Most of the examples will be in Java, once again just ask if the syntax doesn't make sense
+* One last thing; although I prefer static typing, this isn't about bashing dynamically-typed languages,
+but it may give some insight into why some people like them. I hope I'll also prompt developers in any
+language to think about whether they could use types more effectively.
+--
+
+== What is a 'Type'
+* State / Information
+* Will have operations associated with it
+** Part of the type - Objects and methods
+** Functions which take or return the type
+
+[.notes]
+--
+* Types represent a way to hold some state in our programs
+* To be useful we'll write code that uses instances of these types, or maybe returns them
+* In the OO paradigm that's usually methods and state in a class
+* Procedural and functional styles might include functions and the types they work with in a common module
+--
+
 == Types of Typing
 * Checked/Unchecked/Weak/Strong
 * Static/Dynamic
@@ -21,6 +45,18 @@ ifndef::sourcedir[:sourcedir: src]
 ** Compilation cost
 ** Feedback time for mistakes
 ** Clarity/Verbosity
+
+[.notes]
+--
+* We tend to talk about types in a pretty loose way; languages which have weak or strong type systems
+but I couldn't find good definitions for what those terms really mean.
+* A clearer distinction is between static type-checking (at compile time) and dynamic type-checking at run time
+* There are trade-offs to be made by language designers
+** Type checks need extra work at compile time, it takes longer between making a change and being able to run it
+** Errors like typo's won't show up until runtime if the checks don't happen during compilation
+** Types in code, whether compiled or not, help to explain the logic to another programmer
+** Some strongly typed languages clutter source code with duplicated detail (I'm looking at you, Java)
+--
 
 === Dynamic
 [source,ruby]
@@ -36,6 +72,20 @@ hello(3)      # TypeError (runtime)
 ** The 'shape' of the object is _assumed_
 * Test coverage is important to check assumptions
 
+[.notes]
+--
+* This is an example in Ruby, a language with runtime type-checking
+* The `greet` function uses the `+` operator on the "Hello " string, which
+expects another string on the right-hand side.
+* Nowhere does the code explicitly state what type `name` has, or what type is returned
+* We can call `greet` and pass any object we want, but unless it is a string we'll get
+an error when we run it
+** `(no implicit conversion of Integer into String)`
+* When writing production software some extra test effort is needed to make sure everything
+lines up
+** It's not unusual for Ruby projects to require 100% coverage of all code with automated tests
+--
+
 === Static
 [source,java]
 ----
@@ -50,6 +100,13 @@ hello(3); // Compilation fails
 * Java *must* know the type of a reference at compile time
 ** The 'shape' of the object is _known_
 * Test coverage focuses on behaviours
+
+[.notes]
+--
+* Here's the equivalent Java code, notice that both the `name` parameter and the return value have an explicit type
+* It's impossible to build code where `greet` is called with anything *except* a `String`
+* So that's it; Java is type-safe, it's impossible to get a runtime error for an invalid type.
+--
 
 === Except ...
 
@@ -69,6 +126,12 @@ hello(3);
 ----
 
 * Successful, but not checked until runtime
+
+[.notes]
+--
+* Java has the special `Object` class that every class inherits from
+* As it happens, the code above both compiles *and* runs successfully because ... TODO
+--
 
 === What about ...?
 
