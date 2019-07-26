@@ -75,7 +75,7 @@ hello(3)      # TypeError (runtime)
 [.notes]
 --
 * This is an example in Ruby, a language with runtime type-checking
-* The `greet` function uses the `+` operator on the "Hello " string, which
+* The `greet` function uses the `+` *method* on the "Hello " string, which
 expects another string on the right-hand side.
 * Nowhere does the code explicitly state what type `name` has, or what type is returned
 * We can call `greet` and pass any object we want, but unless it is a string we'll get
@@ -130,7 +130,8 @@ hello(3);
 [.notes]
 --
 * Java has the special `Object` class that every class inherits from
-* As it happens, the code above both compiles *and* runs successfully because ... TODO
+* As it happens, the code above both compiles *and* runs successfully because in Java the '+' the right hand side
+has `toString()` called on it - changing the type to `String`
 --
 
 === What about ...?
@@ -142,19 +143,29 @@ String greet(Object name, Object repeat) {
 }
 
 greet("Tony", 3);
-greet(3, "Tony");
+greet(3, "Tony"); // runtime exception
 ----
 [.step]
-* Both compile
+* Compiles
 * Runtime exception
 * But who'd do that?
+
+[.notes]
+--
+* Here's a contrived example where the Java code compiles, but fails at runtime
+* There's a lot of ceremony where the `repeat` object is *cast* to type `int`, because that's
+the type that the `repeat` method needs
+* The first call succeeds, the second causes an exception at runtime
+* This is one example of dynamic typing in Java, there are others, but I won't go into them now.
+* But why would anyone choose to do that?
+--
 
 === `Map`
 
 [source,java]
 ----
 String greetMany(Map<String, Integer> people) {
-    StringBuilder greetings = new StringBuilder();
+    var greetings = new StringBuilder();
     people.forEach( (name, repeat) -> {
         greetings.append("Hello ".repeat(repeat) + name);
     });
@@ -165,11 +176,25 @@ Map people = new HashMap() {{
     put("Tony", 3);
     put(3, "Tony");
 }};
-greetMany(people);
+greetMany(people); // runtime exception
 ----
 [.step]
+* Compiles
 * Runtime exception
 * But who'd do that?
+
+[.notes]
+--
+* This is what I think of in my head as _"the art of typing without typing"_
+* The code has types defined, but they only enforced in limited ways
+* The method `greet` has a well defined contract, and it looks like there should be a compilation failure
+* Because of the history of the Java language, *Generics* (that's the information in the angle brackets) aren't
+enforced when dealing with so-called *raw* collections.
+* Notice the `var` keyword - that became valid syntax in Java 10 and is an example of _Type Inference_, where the
+type of `greetings` is inferred from the expression on the right hand side.
+* It's still early days for Java but it does help to reduce the clutter of Java code.
+* This sort of mistake is much easier to make, but is easily detected by static analysis tools.
+--
 
 === `String`
 
@@ -186,6 +211,17 @@ greet("Leeds", "Bob");
 [.step]
 * Runtime confusion
 
+[.notes]
+--
+* This one example of where relying on the types native to your programming language may not be enough.
+* The intent of the method is straightforward, it compiles and runs *and there's no exception*
+* This is a more subtle failure which may not be detected by automated tests.
+* Although this is a simple example I'm sure we all have examples in our code bases where there are
+lists of `String` and numeric types passed into methods which use some of them to call other methods, perhaps
+in a different order.
+* This passing around of data is a common place for subtle bugs to accumulate, and makes reasoning about such code
+harder than it needs to be.
+--
 
 == Tiny Types
 
@@ -193,40 +229,89 @@ greet("Leeds", "Bob");
 [source,java]
 ----
 String greet(Name person, City city) {
-    return "Hello " + person.givenName + " " + city;
+    return "Hello " + person.givenName + " from " + city;
 }
 
 Name theresa = Name.of("Theresa");
 City london = City.of("London");
 greet(theresa, london);
+//greet(london, theresa); // compile fails
 
-LatLon position = locationOf(london);
 ----
 
+[.notes]
+--
+* This is the same method, but we've moved away from the _"Stringly Typed"_ definition
+* It's a compilation failure to put these values the wrong way around when calling `greet`
+* The typed-values, once defined, can be used safely in other calls
+* Conversion from `String` etc is only necessary once at system boundaries, when data is received.
+--
+
 === Why they're useful
+[source,java]
+----
+LatLon position = london.location();
+----
 * Compile-time safety
 * Good OO
 * IDE auto-completion
 * Refactoring
 
+[.notes]
+--
+* As well as adding extra safety to check for easy mistakes during compilation
+* In OO style, once there is a class that represents *Name* or *Location* it will naturally
+attract associated methods - such as the coordinates of a geographical location.
+* An IDE such as IntelliJ will automatically pick the correct values from local scope to pass
+into a function call.
+* Refactoring becomes easier - there's once place to change e.g. how identifiers are stored
+--
+
 == Enumerations
+[source,java]
+----
+enum RAG {Red, Amber, Green}
+----
 * A fixed set of options
 * Can also implement an `interface`
+
+[.notes]
+--
+* There's a lot more to say about tiny types, including how they're implemented and the
+trade-offs that they require, but I want to just cover a few more ways of where types can help.
+* If a type represents a fixed set of values, an enumeration can be an easy choice
+* In Java, enums can implement interfaces and have methods.
+--
 
 == Nullable?
 * A `String` which can hold a null reference
 * A `String` which can only have a value
 ** Are they the same type?
-* Kotlin / C#
+
+[source,java]
+----
+// Kotlin
+val nullable: String? = null   // OK
+val notNullable: String = null // compilation error
+----
+
+[.notes]
+--
+* `null` or `nil` has fallen out of favour, the inventor of the null reference , Tony Hoare, refers
+to it as his _"billion-dollar mistake"_
+* Kotlin, which prioritises interoperability with Java, has a style which strongly discourages `null`,
+but has mechanisms in the language to express and constrain valid values
+--
 
 == Types-in-a-box
 * These types express uncertainty
 * Can defer resolving the uncertainty
 * Something like schrödinger's cat
 
-=== Promise/Future
-* A result that _may_ be available later
-* ... or may be an exception
+[.notes]
+--
+* There are another category of types that are becoming more popular
+--
 
 === Optional
 * A result that may not be there
@@ -254,6 +339,10 @@ Meeting meeting =
 * Express the 'happy path'
 * Handle errors from any step
 ** Each of the first three steps might result in a 'not-present'
+
+=== Promise/Future
+* A result that _may_ be available later
+* ... or may be an exception
 
 === Either/Maybe
 * May be successful
