@@ -17,11 +17,14 @@ ifndef::sourcedir[:sourcedir: src]
 [.notes]
 --
 * This is a discussion about types as they're used in day-to-day development - there will be code
-* I'll do my best to define terms as I go, but ask if I miss something or if I've explained it badly
-* Most of the examples will be in Java, once again just ask if the syntax doesn't make sense
+* I'll do my best to define terms as I go, but if I miss something or if I've explained it badly feel free
+to interrupt.
+* Most of the examples will be in Java, once again, please ask if the syntax doesn't make sense
+* I hope I'll prompt developers in any language to think about whether they could use types more effectively.
 * One last thing; although I prefer static typing, this isn't about bashing dynamically-typed languages,
-but it may give some insight into why some people like them. I hope I'll also prompt developers in any
-language to think about whether they could use types more effectively.
+but it may give some insight into why some people are more than happy to spend time making the compiler happy.
+
+*[1:00]*
 --
 
 == What is a 'Type'
@@ -32,10 +35,60 @@ language to think about whether they could use types more effectively.
 
 [.notes]
 --
+* First, a definition
 * Types represent a way to hold some state in our programs
 * To be useful we'll write code that uses instances of these types, or maybe returns them
 * In the OO paradigm that's usually methods and state in a class
 * Procedural and functional styles might include functions and the types they work with in a common module
+
++30 *[1:30]*
+--
+
+== Types of Types
+* Numeric types
+* Character types
+* Booleans
+* Collection types
+
+[.notes]
+--
+* Most languages have a core set of types to work with
+* There will be one or more numeric types - perhaps different types for integers or floating-point numbers, and
+sometimes many refinements on these basic values.
+* Character types, such as strings are a basic commodity
+* Almost all languages have the concept of a boolean value; something which is either true or false
+* Then there are collection types; lists, sets, arrays, dictionaries, tuples and more
+
++30 *[2:00]*
+--
+
+== Types as Constraints
+
+[source,kotlin]
+----
+Integer counter      = 100;
+Float   interestRate = 0.12f;
+Set     attendees;
+List    snmpTraps;
+
+VARCHAR2(20)
+----
+
+[.notes]
+--
+* By choosing a type to represent a concept we constrain it in some way.
+* Choosing integer over float excludes an infinity of possible values
+* although we'd certainly want a counter to represent whole numbers, we probably don't want to allow
+negative values - that's an extra bit of knowledge specific to how it's being used that.
+* Picking a set, or a list, or an array, expresses and limits choices about the values that will
+be stored and how we plan to retrieve them.
+* Sets don't allow duplicates, lists aren't good for random access
+* SQL defines a choice of character types, and allows limits to be set on the size
+* Some environments allow a choice of un-modifiable, or immutable, collections; an important safety feature
+when shared with concurrent threads.
+* So, an important part of the process of low level design for an application is the choice of constraints.
+
++60 *[3:00]*
 --
 
 == Types of Typing
@@ -48,14 +101,16 @@ language to think about whether they could use types more effectively.
 
 [.notes]
 --
-* We tend to talk about types in a pretty loose way; languages which have weak or strong type systems
-but I couldn't find good definitions for what those terms really mean.
+* We tend to talk about types in a pretty loose way; languages may be described as having weak or
+strong type systems but I couldn't find good definitions for what those terms really mean.
 * A clearer distinction is between static type-checking (at compile time) and dynamic type-checking at run time
 * There are trade-offs to be made by language designers
 ** Type checks need extra work at compile time, it takes longer between making a change and being able to run it
-** Errors like typo's won't show up until runtime if the checks don't happen during compilation
+** but errors like typo's won't show up until runtime if the checks don't happen during compilation
 ** Types in code, whether compiled or not, help to explain the logic to another programmer
-** Some strongly typed languages clutter source code with duplicated detail (I'm looking at you, Java)
+** but some strongly typed languages clutter source code with duplicated detail; Java is prone to this
+
++60 *[4:00]*
 --
 
 === Dynamic
@@ -84,6 +139,8 @@ an error when we run it
 * When writing production software some extra test effort is needed to make sure everything
 lines up
 ** It's not unusual for Ruby projects to require 100% coverage of all code with automated tests
+
++60 *[5:00]*
 --
 
 === Static
@@ -106,6 +163,8 @@ hello(3); // Compilation fails
 * Here's the equivalent Java code, notice that both the `name` parameter and the return value have an explicit type
 * It's impossible to build code where `greet` is called with anything *except* a `String`
 * So that's it; Java is type-safe, it's impossible to get a runtime error for an invalid type.
+
++30 *[5:30]*
 --
 
 === Except ...
@@ -132,6 +191,8 @@ hello(3);
 * Java has the special `Object` class that every class inherits from
 * As it happens, the code above both compiles *and* runs successfully because in Java the '+' the right hand side
 has `toString()` called on it - changing the type to `String`
+
++45 *[6:15]*
 --
 
 === What about ...?
@@ -145,7 +206,6 @@ String greet(Object name, Object repeat) {
 greet("Tony", 3);
 greet(3, "Tony"); // runtime exception
 ----
-[.step]
 * Compiles
 * Runtime exception
 * But who'd do that?
@@ -153,14 +213,18 @@ greet(3, "Tony"); // runtime exception
 [.notes]
 --
 * Here's a contrived example where the Java code compiles, but fails at runtime
+* The `greet` method takes two parameters now, one for the name of the person to greet, and one
+for the number of times to repeat the greeting.
 * There's a lot of ceremony where the `repeat` object is *cast* to type `int`, because that's
 the type that the `repeat` method needs
 * The first call succeeds, the second causes an exception at runtime
 * This is one example of dynamic typing in Java, there are others, but I won't go into them now.
-* But why would anyone choose to do that?
+* The question is; would anyone choose to do that?
+
++45 *[7:00]*
 --
 
-=== `Map`
+=== The Type that wasn't there
 
 [source,java]
 ----
@@ -172,31 +236,36 @@ String greetMany(Map<String, Integer> people) {
     return greetings.toString();
 }
 
-Map people = new HashMap() {{
-    put("Tony", 3);
-    put(3, "Tony");
-}};
+Map people = Map.of(
+    "Tony", 3,
+    3,      "Tony"
+);
+
 greetMany(people); // runtime exception
 ----
-[.step]
 * Compiles
 * Runtime exception
 * But who'd do that?
 
 [.notes]
 --
-* This is what I think of in my head as _"the art of typing without typing"_
-* The code has types defined, but they only enforced in limited ways
-* The method `greet` has a well defined contract, and it looks like there should be a compilation failure
-* Because of the history of the Java language, *Generics* (that's the information in the angle brackets) aren't
-enforced when dealing with so-called *raw* collections.
+* Here, the code is extended to be able to greet many people a number of times.
+* The `people` parameter is defined to be a Map, or dictionary, of names (Strings) to number of greetings (an Integer)
 * Notice the `var` keyword - that became valid syntax in Java 10 and is an example of _Type Inference_, where the
 type of `greetings` is inferred from the expression on the right hand side.
-* It's still early days for Java but it does help to reduce the clutter of Java code.
+* And then we call it
+* The `Map.of(...)` syntax was introduced in Java 9 as a way of creating and initialising a `Map`
+* Now, this is what I think of in my head as an example of _"the art of typing without typing"_
+* The code has types defined, but they're only enforced in limited ways
+* The method `greet` has a well defined contract, and it looks like there should be a compilation failure
+* But, because of the history of the Java language, *Generics* (that's the information in the angle brackets)
+aren't enforced when dealing with so-called *raw* collections.
 * This sort of mistake is much easier to make, but is easily detected by static analysis tools.
+
++80 *[8:20]*
 --
 
-=== `String`
+=== Stringly-typed code
 
 [source,java]
 ----
@@ -208,19 +277,21 @@ greet("Alice", "London");
 greet("Leeds", "Bob");
 
 ----
-[.step]
 * Runtime confusion
 
 [.notes]
 --
 * This one example of where relying on the types native to your programming language may not be enough.
-* The intent of the method is straightforward, it compiles and runs *and there's no exception*
+* The intent of the method is straightforward; it takes a name and a place and returns an appropriate greeting
+* it compiles and runs *and there's no exception*
 * This is a more subtle failure which may not be detected by automated tests.
 * Although this is a simple example I'm sure we all have examples in our code bases where there are
 lists of `String` and numeric types passed into methods which use some of them to call other methods, perhaps
 in a different order.
 * This passing around of data is a common place for subtle bugs to accumulate, and makes reasoning about such code
 harder than it needs to be.
+
++45 *[9:00]*
 --
 
 == Tiny Types
@@ -232,7 +303,7 @@ String greet(Name person, City city) {
     return "Hello " + person.givenName + " from " + city;
 }
 
-Name theresa = Name.of("Theresa");
+Name theresa = new Name("May", "Theresa");
 City london = City.of("London");
 greet(theresa, london);
 //greet(london, theresa); // compile fails
@@ -241,30 +312,105 @@ greet(theresa, london);
 
 [.notes]
 --
+* So, what's an alternative?
 * This is the same method, but we've moved away from the _"Stringly Typed"_ definition
+* There are specific types to express the `Name` and `City` concepts
 * It's a compilation failure to put these values the wrong way around when calling `greet`
 * The typed-values, once defined, can be used safely in other calls
-* Conversion from `String` etc is only necessary once at system boundaries, when data is received.
+
++30 *[9:30]*
+--
+
+=== Why 'micro' types
+[source,java]
+----
+class Name {
+    final String familyName, givenName;
+
+    Name(String familyName, String givenName) {
+        this.familyName = familyName;
+        this.givenName = givenName;
+    }
+}
+----
+
+[.notes]
+--
+* Types don't need to be complex, this class has just enough to express a concept.
+* The code here creates an immutable wrapper around the pair of `String` values and
+expresses a concept of a person's name.
+* If the concept evolves, to add a middle name for example, then it can be added in
+one place without breaking existing code.
+--
+
+=== We can go further
+[source,java]
+----
+// A parent class to hold common behaviour
+abstract class Type<T> {
+    final T value;
+    protected Type(final T value) { this.value = value; }
+    @Override String toString() { return value.toString(); }
+}
+
+// Define some subclasses
+class GivenName extends Type<String> {
+    GivenName(String value) { super(value); }
+}
+
+class Height extends Type<Integer> {
+    Height(Integer value) { super(value); }
+}
+
+// Use them
+var tony = new GivenName("Tony");
+var tonyHeight = new Height(180);
+
+displayHeight(tony, tonyHeight);
+
+----
+
+[.notes]
+--
+* To just wrap single values it's easy to define a simple parent class to reduce
+boilerplate code, and that can be extended to include `equals` and `hashCode` and
+more.
+* The definition of the specific types can be very small, and they can be combined
+to build complex composites of multiple types.
 --
 
 === Why they're useful
 [source,java]
 ----
 LatLon position = london.location();
+
+Person buildPerson(GivenName givenName, FamilyName familyName) {...}
+Person buildPerson(Name name) {...}
+Person buildPerson(Name name, Age age, Height height) {...}
+//Person buildPerson(Name name, Integer age/height???) {...}
+Person buildPerson(Name name, Age age) {...}
+Person buildPerson(Name name, Height height) {...}
+
 ----
-* Compile-time safety
 * Good OO
-* IDE auto-completion
 * Refactoring
+* Overloaded methods
+* Compile-time safety
+* IDE auto-completion
 
 [.notes]
 --
-* As well as adding extra safety to check for easy mistakes during compilation
-* In OO style, once there is a class that represents *Name* or *Location* it will naturally
-attract associated methods - such as the coordinates of a geographical location.
+* In OO style, once there is a class that represents *Name* or *Location* it will
+naturally attract associated methods - such as the coordinates of a geographical
+location.
+* Refactoring becomes easier - there's one place to change, how identifiers are stored, for example
+* Overloaded methods become both safer and more expressive - if age and height were both plain integers
+it wouldn't be possible to define separate methods like the last two
+* In a statically typed language they add extra safety to check for easy mistakes during compilation
 * An IDE such as IntelliJ will automatically pick the correct values from local scope to pass
 into a function call.
-* Refactoring becomes easier - there's once place to change e.g. how identifiers are stored
+* There's a lot more to say about micro types, including the trade-offs that they require, but I
+want to just cover a few more ways where types can help.
 --
 
 == Enumerations
@@ -277,10 +423,10 @@ enum RAG {Red, Amber, Green}
 
 [.notes]
 --
-* There's a lot more to say about tiny types, including how they're implemented and the
-trade-offs that they require, but I want to just cover a few more ways of where types can help.
 * If a type represents a fixed set of values, an enumeration can be an easy choice
 * In Java, enums can implement interfaces and have methods.
+* I like to use enumerations to implement a state-machine, where an enumeration represents
+each distinct possible state and captures which state comes next in response to a signal
 --
 
 == Nullable?
@@ -300,7 +446,11 @@ val notNullable: String = null // compilation error
 * `null` or `nil` has fallen out of favour, the inventor of the null reference , Tony Hoare, refers
 to it as his _"billion-dollar mistake"_
 * Kotlin, which prioritises interoperability with Java, has a style which strongly discourages `null`,
-but has mechanisms in the language to express and constrain valid values
+but has mechanisms in the language to express and constrain valid values.
+* Any type which ends with a question mark is allowed to hold a null reference, but the standard types
+disallow null and the compiler will insist that any assignment from a nullable value to a non-nullable type
+- the result of a Java API call for example - is checked before it is allowed.
+* The nullability of a value is a design choice, and is enforced by the compiler
 --
 
 == Types-in-a-box
@@ -310,7 +460,12 @@ but has mechanisms in the language to express and constrain valid values
 
 [.notes]
 --
-* There are another category of types that are becoming more popular
+* There are another category of types that are becoming more common as functional-style
+programming gains popularity
+* These types can be seen as expressing uncertainty about a value; it may be present or not, it might be
+one thing or another, or an error may have been thrown while processing.
+* The key thing is that this uncertainty is captured in the type system - a program that receives such a type
+*must* resolve the uncertainty in order to continue.
 --
 
 === Optional
@@ -319,66 +474,74 @@ but has mechanisms in the language to express and constrain valid values
 [source,java]
 ----
 Optional<TimeSlot> nextFreeMeetingSlot(Criteria criteria) {...}
-Optional<MeetingRequest> bookMeeting(Instant startTime,
-                                        Duration duration) {...}
 
-Meeting meeting =
-    nextFreeMeetingSlot(criteria)
-        .filter(timeSlot ->
-            myDiary.isFree(timeSlot))
-        .map(timeSlot ->
-            timeSlot.startTime)
-        .flatMap(startTime ->
-            bookMeeting(startTime, minutes(15)))
-        .orElseThrow(
-            new MeetingException("No meeting slot available")
-        );
+Meeting meeting = nextFreeMeetingSlot(criteria)
+                    .orElse(TimeSlot.EMPTY);
 ----
 
-=== Optional
-* Express the 'happy path'
-* Handle errors from any step
-** Each of the first three steps might result in a 'not-present'
+[.notes]
+--
+* The `nextFreeSlot` method returns an `Optional` type which wraps a result, in this case there
+may or may not be a free time slot that meets the criteria.
+* An alternative way to handle this might be to return `null`, but unless the programmer calling
+`nextFreeSlot` is familiar with the implementation this is a `NullPointerException` waiting to happen.
+* Or the `nextFreeSlot` might throw an exception itself, but handling exceptions breaks up the program
+flow and makes code harder to understand
+* With `Optional` a developer is forced to make a choice about how to handle the happy and sad paths
+--
 
 === Promise/Future
+[source,java]
+----
+var someTimeLater = CompletableFuture.supplyAsync(() -> {
+    Thread.sleep(new Random().nextLong());
+    return Clock.systemUTC().instant();
+});
+
+// do other work
+
+someTimeLater.get();
+----
+
 * A result that _may_ be available later
-* ... or may be an exception
+* ... or not be ready yet
+* ... or may have failed
+
+[.notes]
+--
+* There are different implementations of `Future`, and your language may call them `Promise` s, but they
+all express the idea of a value that may not be available _yet_
+* They provide an API to handle errors and timeouts, and usually express a way to use a default value
+--
 
 === Either/Maybe
 * May be successful
 * ... or maybe not
 
-=== Why are they useful?
-* Deferred error handling / synchronisation
-
 [source,java]
 ----
-void sayTheTime(Future<Instant> time) {
-    try {
-        // Success and a result
-        println(DateTimeFormatter.ISO_DATE.format(time.get()));
-    } catch (Exception e) {
-        e.printStackTrace(); // Failure
-    }
-}
+Either<Error, Thing> buildTheThing() {...}
 
-CompletableFuture<Instant> someTimeLater(String name) {
-    return CompletableFuture.supplyAsync(() -> {
-        try {
-            Thread.sleep(new Random().nextLong());
-            System.out.println(name + " is done");
-            return Clock.systemUTC().instant();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    });
-}
 
-CompletableFuture<Instant> foo = someTimeLater("foo");
-CompletableFuture<Instant> bar = someTimeLater("bar");
-CompletableFuture winner = CompletableFuture.anyOf(foo, bar);
-sayTheTime(winner);
+var maybeAThing = buildTheThing();
+
+if (maybeAThing.isRight()) {
+    return maybeAThing.get();
+} else {
+    maybeAThing.getLeft().explainError();
+}
 ----
+
+[.notes]
+--
+* The `buildTheThing` method returns an instance of the `Either` type
+* As with the `Optional` type, there are two possible results, but instead of something or nothing
+the type wraps one of two concrete outcomes - *left* or *right*
+* A common use is returning errors - perhaps the result of validating some input.  By convention the
+successful value is _right_, and the alternative is _left_.
+* There are other types like this, such as `Try`, and there are ways to work with them to build expressive
+pipelines of functions, but that's another story.
+--
 
 == More complex types
 
@@ -389,12 +552,47 @@ data BillingInfo = CreditCard CardNumber CardHolder Address
                  | Invoice CustomerID
 ----
 
+* Algebraic Data Type
+* Expresses one of a range of choices
+
+[.notes]
+--
 * This Haskell code expresses the concept that billing
 information can be
 ** A credit card, defined by some properties
 ** cash on delivery
 ** an invoice, for a specific customer-ID
+* Features in other languages can express similar concepts, although not quite as elegantly - a class hierarchy
+for example.
+--
 
-== Types express meaning
-* The programming language enables and constrains
-* How we use the language makes a difference
+== `State.CLOSING_THOUGHTS`
+* Languages enable and constrain
+* Expressing intent is an investment
+* Code is there to be *read*
+
+[.notes]
+--
+* While I've talked a lot about static types and OO languages it's worth reinforcing that the concepts are
+just as valid in dynamically-checked languages, and for procedural and functional styles.
+* *But* if you do use a statically typed language, thinking about types and using some of these techniques, can
+help to make the code you write safer, and easier to work with and understand.
+* That expressiveness is a large part of what I enjoy about developing in statically typed languages; as developers
+we spend *so* much more time reading code than writing it, using types that express the intent and behaviour leaves
+me more time to think and less need to guess and assume.
+* The languages and tools we use both enable and constrain, by embracing the constraints of the type system
+we can make it more valuable to us in our day to day work, and to teh systems we build.
+--
+
+== `State.DONE`
+
+* Links
+** This presentation
+*** https://github.com/tonybaines/types-presentation
+** A micro-type implementation in Java
+*** https://github.com/tonybaines/java-micro-types
+
+[.notes]
+--
+* Questions?
+--
