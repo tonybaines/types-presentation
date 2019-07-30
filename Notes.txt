@@ -54,3 +54,32 @@ strong type systems but I couldn't find good definitions for what those terms re
 ** but errors like typo's won't show up until runtime if the checks don't happen during compilation
 ** Types in code, whether compiled or not, help to explain the logic to another programmer
 ** but some strongly typed languages clutter source code with duplicated detail; Java is prone to this
+
+
+Dynamic
+
+* This is an example in Ruby, a language with runtime type-checking
+* The `greet` function uses the `+` *method* on the "Hello " string, which
+expects another string on the right-hand side.
+* Nowhere does the code explicitly state what type `name` has, or what type is returned
+* We can call `greet` and pass any object we want, but unless it is a string we'll get
+an error when we run it
+** `(no implicit conversion of Integer into String)`
+* When writing production software some extra test effort is needed to make sure everything
+lines up
+** It's not unusual for Ruby projects to require 100% coverage of all code with automated tests
+
+
+Static
+
+* Here's the equivalent Java code, notice that both the `name` parameter and the return value have an explicit type
+* It's impossible to build code where `greet` is called with anything *except* a `String`
+* So that's it; Java is type-safe, it's impossible to get a runtime error for an invalid type.
+
+
+Object
+
+
+* Java has the special `Object` class that every class inherits from
+* As it happens, the code above both compiles *and* runs successfully because in Java the '+' the right hand side
+has `toString()` called on it - changing the type to `String`

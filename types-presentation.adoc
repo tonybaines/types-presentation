@@ -100,7 +100,7 @@ VARCHAR2(20)
 * Compilation takes time - increases feedback cycle
 * Finds some bugs early - faster feedback
 * Types help explain code - improve comprehension
-* Syntax can clutter - harder ro read
+* Syntax can clutter - harder to read
 
 +60
 --
@@ -112,8 +112,8 @@ def greet(name)
   return "Hello " + name
 end
 
-hello("Tony") # Hello Tony
-hello(3)      # TypeError (runtime)
+greet("Tony") # Hello Tony
+greet(3)      # TypeError (runtime)
 ----
 * Ruby determines the type of a reference at runtime
 ** The 'shape' of the object is _assumed_
@@ -121,16 +121,12 @@ hello(3)      # TypeError (runtime)
 
 [.notes]
 --
-* This is an example in Ruby, a language with runtime type-checking
-* The `greet` function uses the `+` *method* on the "Hello " string, which
-expects another string on the right-hand side.
-* Nowhere does the code explicitly state what type `name` has, or what type is returned
-* We can call `greet` and pass any object we want, but unless it is a string we'll get
-an error when we run it
-** `(no implicit conversion of Integer into String)`
-* When writing production software some extra test effort is needed to make sure everything
-lines up
-** It's not unusual for Ruby projects to require 100% coverage of all code with automated tests
+* '+' method called on "Hello "
+* No explicit 'String' mentioned
+* Can pass *anything* to greet()
+* Evaluated at runtime
+* Error if wrong 'shape'
+* Use tests to check assumptions
 
 +60
 --
@@ -142,24 +138,25 @@ String greet(String name) {
     return "Hello " + name;
 }
 
-hello("Tony");
+greet("Tony");
 
-hello(3); // Compilation fails
+greet(3); // Compilation fails
 ----
 * Java *must* know the type of a reference at compile time
 ** The 'shape' of the object is _known_
-* Test coverage focuses on behaviours
+* No type errors at run time?
 
 [.notes]
 --
-* Here's the equivalent Java code, notice that both the `name` parameter and the return value have an explicit type
-* It's impossible to build code where `greet` is called with anything *except* a `String`
-* So that's it; Java is type-safe, it's impossible to get a runtime error for an invalid type.
+* '+' is an operator (not a method)
+* Explicit type of parameter & return
+* Wrong type *impossible*
+* Means no runtime type-errors?
 
 +30
 --
 
-=== Except ...
+=== Well ...
 
 
 
@@ -171,18 +168,19 @@ String greet(Object name) {
     return "Hello " + name;
 }
 
-hello("Tony");
+greet("Tony");
 
-hello(3);
+greet(3);
+greet(new ArrayList());
 ----
 
 * Successful, but not checked until runtime
 
 [.notes]
 --
-* Java has the special `Object` class that every class inherits from
-* As it happens, the code above both compiles *and* runs successfully because in Java the '+' the right hand side
-has `toString()` called on it - changing the type to `String`
+* Almost same - Object parameter
+* Works by coincidence
+* May give rubbish result
 
 +45
 --
