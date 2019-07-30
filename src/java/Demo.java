@@ -43,10 +43,6 @@ public class Demo {
         Height(Integer value) { super(value); }
     }
 
-    Meeting meeting =
-            nextFreeMeetingSlot(criteria)
-                    .orElse(TimeSlot.EMPTY);
-
     static class Name {
         final String familyName, givenName;
 
@@ -67,6 +63,13 @@ public class Demo {
            3, "Tony"
         );
 
+        var rag = RAG.valueOf("Red");
+
+        switch (rag) {
+            case Red: System.out.println("ERROR"); break;
+            case Amber: System.out.println("WARNING"); break;
+        }
+
         var tony = new GivenName("Tony");
         var tonyAge = new Age(49);
         System.out.println(tony.value);
@@ -76,14 +79,6 @@ public class Demo {
         buildPerson(new Name("Baines", "Tony"), new Height(180));
         buildPerson(new Name("Baines", "Tony"), new Age(49));
 
-        var someTimeLater = CompletableFuture.supplyAsync(() -> {
-            Thread.sleep(new Random().nextLong());
-            return Clock.systemUTC().instant();
-        });
-
-        // do other work
-
-        someTimeLater.get();
 
 //        var foo = "Foo";
 //

@@ -83,3 +83,107 @@ Object
 * Java has the special `Object` class that every class inherits from
 * As it happens, the code above both compiles *and* runs successfully because in Java the '+' the right hand side
 has `toString()` called on it - changing the type to `String`
+
+
+What about
+
+
+* Here's a contrived example where the Java code compiles, but fails at runtime
+* The `greet` method takes two parameters now, one for the name of the person to greet, and one
+for the number of times to repeat the greeting.
+* There's a lot of ceremony where the `repeat` object is *cast* to type `int`, because that's
+the type that the `repeat` method needs
+* The first call succeeds, the second causes an exception at runtime
+* This is one example of dynamic typing in Java, there are others, but I won't go into them now.
+* The question is; would anyone choose to do that?
+
+
+Type not there
+
+* Here, the code is extended to be able to greet many people a number of times.
+* The `people` parameter is defined to be a Map, or dictionary, of names (Strings) to number of greetings (an Integer)
+* Notice the `var` keyword - that became valid syntax in Java 10 and is an example of _Type Inference_, where the
+type of `greetings` is inferred from the expression on the right hand side.
+* And then we call it
+* The `Map.of(...)` syntax was introduced in Java 9 as a way of creating and initialising a `Map`
+* Now, this is what I think of in my head as an example of _"the art of typing without typing"_
+* The code has types defined, but they're only enforced in limited ways
+* The method `greet` has a well defined contract, and it looks like there should be a compilation failure
+* But, because of the history of the Java language, *Generics* (that's the information in the angle brackets)
+aren't enforced when dealing with so-called *raw* collections.
+* This sort of mistake is much easier to make, but is easily detected by static analysis tools.
+
+
+Stringly typed
+
+* This one example of where relying on the types native to your programming language may not be enough.
+* The intent of the method is straightforward; it takes a name and a place and returns an appropriate greeting
+* it compiles and runs *and there's no exception*
+* This is a more subtle failure which may not be detected by automated tests.
+* Although this is a simple example I'm sure we all have examples in our code bases where there are
+lists of `String` and numeric types passed into methods which use some of them to call other methods, perhaps
+in a different order.
+* This passing around of data is a common place for subtle bugs to accumulate, and makes reasoning about such code
+harder than it needs to be.
+
+
+Micro Types - better?
+
+* So, what's an alternative?
+* This is the same method, but we've moved away from the _"Stringly Typed"_ definition
+* There are specific types to express the `Name` and `City` concepts
+* It's a compilation failure to put these values the wrong way around when calling `greet`
+* The typed-values, once defined, can be used safely in other calls
+
+
+Why 'micro' ?
+
+* Types don't need to be complex, this class has just enough to express a concept.
+* The code here creates an immutable wrapper around the pair of `String` values and
+expresses a concept of a person's name.
+* If the concept evolves, to add a middle name for example, then it can be added in
+one place without breaking existing code.
+
+Micro impl
+
+* To just wrap single values it's easy to define a simple parent class to reduce
+boilerplate code, and that can be extended to include `equals` and `hashCode` and
+more.
+* The definition of the specific types can be very small, and they can be combined
+to build complex composites of multiple types.
+
+
+Why useful
+
+* In OO style, once there is a class that represents *Name* or *Location* it will
+naturally attract associated methods - such as the coordinates of a geographical
+location.
+* Refactoring becomes easier - there's one place to change, how identifiers are stored, for example
+* Overloaded methods become both safer and more expressive - if age and height were both plain integers
+it wouldn't be possible to define separate methods like the last two
+* In a statically typed language they add extra safety to check for easy mistakes during compilation
+* An IDE such as IntelliJ will automatically pick the correct values from local scope to pass
+into a function call.
+* There's a lot more to say about micro types, including the trade-offs that they require, but I
+want to just cover a few more ways where types can help.
+
+
+Enum
+
+* If a type represents a fixed set of values, an enumeration can be an easy choice
+* In Java, enums can implement interfaces and have methods - they can have behaviour.
+* I like to use enumerations to implement a state-machine, where an enumeration represents
+each distinct possible state and captures which state comes next in response to a signal
+
+
+Nullable
+
+* `null` or `nil` has fallen out of favour, the inventor of the null reference , Tony Hoare, refers
+to it as his _"billion-dollar mistake"_
+* Kotlin, which prioritises interoperability with Java, has a style which strongly discourages `null`,
+but has mechanisms in the language to express and constrain valid values.
+* Any type which ends with a question mark is allowed to hold a null reference, but the standard types
+disallow null and the compiler will insist that any assignment from a nullable value to a non-nullable type
+- the result of a Java API call for example - is checked before it is allowed.
+* The nullability of a value is a design choice, and is enforced by the compiler
+
