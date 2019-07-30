@@ -187,3 +187,64 @@ disallow null and the compiler will insist that any assignment from a nullable v
 - the result of a Java API call for example - is checked before it is allowed.
 * The nullability of a value is a design choice, and is enforced by the compiler
 
+
+Types in a box
+
+* There are another category of types that are becoming more common as functional-style
+programming gains popularity
+* These types can be seen as expressing uncertainty about a value; it may be present or not, it might be
+one thing or another, or an error may have been thrown while processing.
+* The key thing is that this uncertainty is captured in the type system - a program that receives such a type
+*must* resolve the uncertainty in order to continue.
+
+
+Optional
+
+* The `nextFreeSlot` method returns an `Optional` type which wraps a result, in this case there
+may or may not be a free time slot that meets the criteria.
+* An alternative way to handle this might be to return `null`, but unless the programmer calling
+`nextFreeSlot` is familiar with the implementation this is a `NullPointerException` waiting to happen.
+* Or the `nextFreeSlot` might throw an exception itself, but handling exceptions breaks up the program
+flow and makes code harder to understand
+* With `Optional` a developer is forced to make a choice about how to handle the happy and sad paths
+
+
+Future
+
+* There are different implementations of `Future`, and your language may call them `Promise` s, but they
+all express the idea of a value that may not be available _yet_
+* They provide an API to handle errors and timeouts, and usually express a way to use a default value
+
+
+Either/Maybe
+
+* The `buildTheThing` method returns an instance of the `Either` type
+* As with the `Optional` type, there are two possible results, but instead of something or nothing
+the type wraps one of two concrete outcomes - *left* or *right*
+* A common use is returning errors - perhaps the result of validating some input.  By convention the
+successful value is _right_, and the alternative is _left_.
+* There are other types like this, such as `Try`, and there are ways to work with them to build expressive
+pipelines of functions, but that's another story.
+
+
+ADT
+
+* This Haskell code expresses the concept that billing
+information can be
+** A credit card, defined by some properties
+** cash on delivery
+** an invoice, for a specific customer-ID
+* Features in other languages can express similar concepts, although not quite as elegantly - a class hierarchy
+for example.
+
+Closing
+
+* While I've talked a lot about static types and OO languages it's worth reinforcing that the concepts are
+just as valid in dynamically-checked languages, and for procedural and functional styles.
+* *But* if you do use a statically typed language, thinking about types and using some of these techniques can
+help to make the code you write safer, and easier to work with and understand.
+* That expressiveness is a big part of what I enjoy about developing in statically typed languages; as developers
+we spend *so* much more time reading code than writing it, using types that express the intent and behaviour leaves
+me more time to think and less need to guess and assume.
+* The languages and tools we use both enable and constrain, by embracing the constraints of the type system
+we can make it more valuable to us in our day to day work, and to the systems we build.

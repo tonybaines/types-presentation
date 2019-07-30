@@ -461,6 +461,8 @@ val notNullable: String = null // compilation error
 --
 * Tony Hoare - "million dollar mistake"
 * Kotlin makes distinction
+* Not null by default
+* More null checks at compile
 
 
 +45
@@ -473,12 +475,11 @@ val notNullable: String = null // compilation error
 
 [.notes]
 --
-* There are another category of types that are becoming more common as functional-style
-programming gains popularity
-* These types can be seen as expressing uncertainty about a value; it may be present or not, it might be
-one thing or another, or an error may have been thrown while processing.
-* The key thing is that this uncertainty is captured in the type system - a program that receives such a type
-*must* resolve the uncertainty in order to continue.
+* Express uncertainty
+* Result of a process
+* Do further work with value
+* Open the box and decide
+* Type makes uncertainty explicit
 
 +30
 --
@@ -490,19 +491,41 @@ one thing or another, or an error may have been thrown while processing.
 ----
 Optional<TimeSlot> nextFreeMeetingSlot(Criteria criteria) {...}
 
-Meeting meeting = nextFreeMeetingSlot(criteria)
-                    .orElse(TimeSlot.EMPTY);
+TimeSlot meetingTime = nextFreeMeetingSlot(criteria)
+                         .orElse(TimeSlot.EMPTY);
 ----
 
 [.notes]
 --
-* The `nextFreeSlot` method returns an `Optional` type which wraps a result, in this case there
-may or may not be a free time slot that meets the criteria.
-* An alternative way to handle this might be to return `null`, but unless the programmer calling
-`nextFreeSlot` is familiar with the implementation this is a `NullPointerException` waiting to happen.
-* Or the `nextFreeSlot` might throw an exception itself, but handling exceptions breaks up the program
-flow and makes code harder to understand
-* With `Optional` a developer is forced to make a choice about how to handle the happy and sad paths
+* Simple usage
+* Open the box
+* Decide what to do
+* Type forces developer to decide
+
++45
+--
+
+=== Optional flow
+
+[source,java]
+----
+Optional<TimeSlot> nextFreeMeetingSlot(Criteria criteria) {...}
+
+Meeting meeting = nextFreeMeetingSlot(criteria)       // Optional<TimeSlot>
+                    .flatMap(Bookings::createBooking) // Optional<Booking>
+                    .flatMap(Mailer::sendRequest)     // Optional<Meeting>
+                    .orElseThrow(new ScheduleFailure());
+----
+
+[.notes]
+--
+* Each step
+** Open the box
+** Decide what to do - process or ignore
+** Close the box
+* flatMap = standard transform operation
+* Sad path deferred
+* Clearer than exception
 
 +45
 --
@@ -510,14 +533,18 @@ flow and makes code harder to understand
 === Promise/Future
 [source,java]
 ----
-var someTimeLater = CompletableFuture.supplyAsync(() -> {
-    Thread.sleep(new Random().nextLong());
-    return Clock.systemUTC().instant();
-});
+Future<String> resultFuture =
+  Future.of(() -> appendData(initialValue))
+    .map(finalResult ->
+            System.out.println("Completed - 1: " + finalResult))
+    .map(finalResult ->
+            System.out.println("Completed - 2: " + finalResult));
 
 // do other work
 
-someTimeLater.get();
+var result = resultFuture
+        .getOrElse("Failed to get underlying value.");
+
 ----
 
 * A result that _may_ be available later
@@ -526,9 +553,13 @@ someTimeLater.get();
 
 [.notes]
 --
-* There are different implementations of `Future`, and your language may call them `Promise` s, but they
-all express the idea of a value that may not be available _yet_
-* They provide an API to handle errors and timeouts, and usually express a way to use a default value
+* aka Promise
+* Asynchronous process
+* May or may not complete in time
+* Might have failed
+* Open the box to find out
+* map operations happen only if success
+* Error handling when box opened
 
 +30
 --
@@ -553,13 +584,12 @@ if (maybeAThing.isRight()) {
 
 [.notes]
 --
-* The `buildTheThing` method returns an instance of the `Either` type
-* As with the `Optional` type, there are two possible results, but instead of something or nothing
-the type wraps one of two concrete outcomes - *left* or *right*
-* A common use is returning errors - perhaps the result of validating some input.  By convention the
-successful value is _right_, and the alternative is _left_.
-* There are other types like this, such as `Try`, and there are ways to work with them to build expressive
-pipelines of functions, but that's another story.
+* aka Maybe
+* Concept of two possible types
+* EXPLAIN
+* Error is 'left' by convention
+* Also support map/flatMap chained operations
+* Must open box to get value
 
 +30
 --
@@ -578,13 +608,12 @@ data BillingInfo = CreditCard CardNumber CardHolder Address
 
 [.notes]
 --
-* This Haskell code expresses the concept that billing
-information can be
-** A credit card, defined by some properties
-** cash on delivery
-** an invoice, for a specific customer-ID
-* Features in other languages can express similar concepts, although not quite as elegantly - a class hierarchy
-for example.
+* Something different
+* Haskell
+* Expresses type BillingInfo choices
+* Use pattern matching feature to unpack and use
+* Expresses design
+* Constrains options
 
 +45
 --
@@ -596,15 +625,10 @@ for example.
 
 [.notes]
 --
-* While I've talked a lot about static types and OO languages it's worth reinforcing that the concepts are
-just as valid in dynamically-checked languages, and for procedural and functional styles.
-* *But* if you do use a statically typed language, thinking about types and using some of these techniques can
-help to make the code you write safer, and easier to work with and understand.
-* That expressiveness is a big part of what I enjoy about developing in statically typed languages; as developers
-we spend *so* much more time reading code than writing it, using types that express the intent and behaviour leaves
-me more time to think and less need to guess and assume.
-* The languages and tools we use both enable and constrain, by embracing the constraints of the type system
-we can make it more valuable to us in our day to day work, and to the systems we build.
+* Not just static typing and OO
+* Choice of types express design
+* More types == compiler works harder
+* Embrace type system to get most from language
 
 +45
 --

@@ -74,6 +74,13 @@ public class Demo {
         var tonyAge = new Age(49);
         System.out.println(tony.value);
 
+        var someTimeLater = CompletableFuture.supplyAsync(() -> {
+            Thread.sleep(new Random().nextLong());
+            return Clock.systemUTC().instant();
+        });
+
+
+
         greetMany(people);
 
         buildPerson(new Name("Baines", "Tony"), new Height(180));
