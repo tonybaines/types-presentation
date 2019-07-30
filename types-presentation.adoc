@@ -33,8 +33,8 @@ ifndef::sourcedir[:sourcedir: src]
 [.notes]
 --
 * Definition: "model a concept in our programs"
-* Information / state
-* Associated operations - methods / functions
+* State
+* Associated operations (functions)
 * Instances passed around
 
 +30
@@ -73,8 +73,8 @@ VARCHAR2(20)
 [.notes]
 --
 * Choice of type for concept constrains
-* Height - units, precision int/float?
-* Counter - int, but what about -ve
+* e.g. Height - units, precision int/float?
+* e.g. Counter - int, but what about -ve
 * List vs Array - random access / iteration / insertion
 * Attendees for meeting - Set (duplicates)
 * SNMP traps received - List (order + duplicates)
@@ -208,7 +208,6 @@ greet(3, "Tony"); // runtime exception
 * Exception this time
 * 'repeat' -cast-> int
 * Dynamic typing possible in Java
-* Also reflection & instanceof
 * Contrived example
 
 +45
@@ -233,9 +232,6 @@ Map people = Map.of(
 
 greetMany(people); // runtime exception
 ----
-* Compiles
-* Runtime exception
-* But who'd do that?
 
 [.notes]
 --
@@ -267,7 +263,7 @@ greet("Leeds", "Bob");    // Hello Leeds from Bob
 
 [.notes]
 --
-* Included types not always enough
+* Built-in types not always enough
 * Obvious intent - wrong outcome
 * More parameters common
 * Passed around & re-ordered
@@ -299,6 +295,7 @@ greet(london, theresa); // compile fails
 * Same method
 * Stronger contract
 * Compile fails if wrong way around
+* Yes, better
 
 +30
 --
@@ -344,13 +341,6 @@ class GivenName extends Type<String> {
 class Height extends Type<Integer> {
     Height(Integer value) { super(value); }
 }
-
-// Use them
-var tony = new GivenName("Tony");
-var tonyHeight = new Height(180);
-
-displayHeight(tony, tonyHeight);
-
 ----
 
 [.notes]
@@ -364,21 +354,12 @@ displayHeight(tony, tonyHeight);
 === Literate API
 [source,java]
 ----
-class GivenName extends Type<String> {
-    // ...
-    static GivenName of(String name) {
-        return new GivenName(name);
-    }
-}
-
 class Height extends Type<Integer> {
     // ...
     static Height cm(int value) {...}
     static Height imperial(int feet, int inches) {...}
-    static Height meters(float value) {...}
 }
 
-var tony = GivenName.of("Tony");
 var tonyHeight = Height.cm(180);
 var gregHeight = Height.imperial(6, 1);
 ----
@@ -396,13 +377,13 @@ var gregHeight = Height.imperial(6, 1);
 ----
 LatLon position = london.location();
 
-Person buildPerson(GivenName givenName, FamilyName familyName) {...}
+Person buildPerson(GivenName givenName, FamilyName familyName) {}
 Person buildPerson(Name name) {...}
-Person buildPerson(Name name, Age age, Height height) {...}
+Person buildPerson(Name name, Age age, Height height) {}
 
-//Person buildPerson(Name name, Integer age/height???) {...}
-Person buildPerson(Name name, Age age) {...}
-Person buildPerson(Name name, Height height) {...}
+//Person buildPerson(Name name, Integer age/height???) {}
+Person buildPerson(Name name, Age age) {}
+Person buildPerson(Name name, Height height) {}
 ----
 * Good OO
 * Refactoring
@@ -476,7 +457,7 @@ val notNullable: String = null // compilation error
 [.notes]
 --
 * Express uncertainty
-* Result of a process
+* Result of a function
 * Do further work with value
 * Open the box and decide
 * Type makes uncertainty explicit
@@ -511,9 +492,9 @@ TimeSlot meetingTime = nextFreeMeetingSlot(criteria)
 ----
 Optional<TimeSlot> nextFreeMeetingSlot(Criteria criteria) {...}
 
-Meeting meeting = nextFreeMeetingSlot(criteria)       // Optional<TimeSlot>
-                    .flatMap(Bookings::createBooking) // Optional<Booking>
-                    .flatMap(Mailer::sendRequest)     // Optional<Meeting>
+Meeting meeting = nextFreeMeetingSlot(criteria)
+                    .flatMap(Bookings::createBooking)
+                    .flatMap(Mailer::sendRequest)
                     .orElseThrow(new ScheduleFailure());
 ----
 
@@ -525,7 +506,7 @@ Meeting meeting = nextFreeMeetingSlot(criteria)       // Optional<TimeSlot>
 ** Close the box
 * flatMap = standard transform operation
 * Sad path deferred
-* Clearer than exception
+* Clearer logic than exception
 
 +45
 --
@@ -618,10 +599,10 @@ data BillingInfo = CreditCard CardNumber CardHolder Address
 +45
 --
 
-== `State.CLOSING_THOUGHTS`
+== Closing Thoughts
 * Languages enable and constrain
 * Expressing intent is an investment
-* Code is there to be *read*
+* Embrace your type system
 
 [.notes]
 --
